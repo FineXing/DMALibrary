@@ -14,7 +14,7 @@
 // (c) Ulf Frisk, 2020-2023
 // Author: Ulf Frisk, pcileech@frizk.net
 //
-// Header Version: 2.16.1
+// Header Version: 2.16
 //
 
 #ifndef __LEECHCORE_H__
@@ -204,7 +204,6 @@ VOID LcMemFree(
 /*
 * Allocate and pre-initialize empty MEMs including a 0x1000 buffer for each
 * pMEM. The result should be freed by LcFree when its no longer needed.
-* The 0x1000-sized per-MEM memory buffers are contigious between MEMs in order.
 * -- cMEMs
 * -- pppMEMs = pointer to receive ppMEMs
 * -- return
@@ -438,11 +437,12 @@ BOOL LcCommand(
 #define LC_CMD_FPGA_TLP_CONTEXT_RD                  0x2000011b00000000  // R - get TLP user-defined context to be passed to callback function. [not remote].
 #define LC_CMD_FPGA_TLP_FUNCTION_CALLBACK           0x2000011500000000  // W - set/unset TLP callback function (pbDataIn == PLC_TLP_CALLBACK). [not remote].
 #define LC_CMD_FPGA_TLP_FUNCTION_CALLBACK_RD        0x2000011c00000000  // R - get TLP callback function. [not remote].
-#define LC_CMD_FPGA_BAR_CONTEXT                     0x2000012000000000  // W - set/unset BAR user-defined context to be passed to callback function. (pbDataIn == LPVOID user context). [not remote].
-#define LC_CMD_FPGA_BAR_CONTEXT_RD                  0x2000012100000000  // R - get BAR user-defined context to be passed to callback function. [not remote].
-#define LC_CMD_FPGA_BAR_FUNCTION_CALLBACK           0x2000012200000000  // W - set/unset BAR callback function (pbDataIn == PLC_BAR_CALLBACK). [not remote].
-#define LC_CMD_FPGA_BAR_FUNCTION_CALLBACK_RD        0x2000012300000000  // R - get BAR callback function. [not remote].
-#define LC_CMD_FPGA_BAR_INFO                        0x0000012400000000  // R - get BAR info (pbDataOut == LC_BAR_INFO[6]).
+#define LC_CMD_FPGA_BAR_CONTEXT                     0x2000011800000000  // W - set/unset BAR user-defined context to be passed to callback function. (pbDataIn == LPVOID user context). [not remote].
+#define LC_CMD_FPGA_BAR_CONTEXT_RD                  0x2000011d00000000  // R - get BAR user-defined context to be passed to callback function. [not remote].
+#define LC_CMD_FPGA_BAR_FUNCTION_CALLBACK           0x2000011900000000  // W - set/unset BAR callback function (pbDataIn == PLC_BAR_CALLBACK). [not remote].
+#define LC_CMD_FPGA_BAR_FUNCTION_CALLBACK_RD        0x2000011e00000000  // R - get BAR callback function. [not remote].
+#define LC_CMD_FPGA_BAR_INFO                        0x0000011a00000000  // R - get BAR info (pbDataOut == LC_BAR_INFO[6]).
+
 
 #define LC_CMD_FILE_DUMPHEADER_GET                  0x0000020100000000  // R
 
@@ -572,10 +572,8 @@ typedef VOID(*PLC_TLP_FUNCTION_CALLBACK)(
 
 typedef struct tdLC_BAR {
     BOOL fValid;
-    BOOL fIO;
     BOOL f64Bit;
     BOOL fPrefetchable;
-    DWORD _Filler[3];
     DWORD iBar;
     QWORD pa;
     QWORD cb;
