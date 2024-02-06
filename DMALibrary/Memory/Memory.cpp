@@ -796,3 +796,26 @@ void Memory::ExecuteWriteScatter(VMMDLL_SCATTER_HANDLE handle, int pid)
 		LOG("[-] Failed to clear Scatter\n");
 	}
 }
+
+std::string Memory::get_unicode_str(uintptr_t address, size_t size)
+{
+	address = address + 0x14;
+	char16_t wcharTemp[64] = { '\0' };
+
+	mem.Read(address, wcharTemp, size * 2);
+
+	// 计算所需的缓冲区大小（以字节为单位）
+	int bytesNeeded = WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<LPCWCH>(wcharTemp), -1, NULL, 0, NULL, NULL);
+	if (bytesNeeded <= 0) {
+		return std::string(); // 返回空字符串，如果无法转换
+	}
+
+	// 创建缓冲区并执行转换
+	std::string utf8Str(bytesNeeded, 0);
+	WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<LPCWCH>(wcharTemp), -1, &utf8Str[0], bytesNeeded, NULL, NULL);
+
+	// 删除字符串末尾的空字符
+	utf8Str.erase(std::find(utf8Str.begin(), utf8Str.end(), '\0'), utf8Str.end());
+
+	return utf8Str;
+}

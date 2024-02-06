@@ -297,6 +297,19 @@ public:
 
 	/*the FPGA handle*/
 	VMM_HANDLE vHandle;
+
+
+	std::string get_unicode_str(uintptr_t address, size_t size);
+
+	template <typename T>
+	T ReadChain(uint64_t addr, std::vector<uint64_t> chain)
+	{
+		uint64_t ret = Read<uint64_t>(addr + chain.at(0));
+		for (int i = 1; i < chain.size(); i++) {
+			ret = Read<uint64_t>(ret + chain.at(i));
+		}
+		return ret;
+	}
 };
 
 inline Memory mem;
