@@ -310,6 +310,17 @@ public:
 		}
 		return ret;
 	}
+
+	template <class AUTO>
+	AUTO Read(IN std::vector<uint64_t> vac)
+	{
+		uint64_t addr = 0x0;
+		for (DWORD i = 0; i < vac.size() - 1; i++)
+		{
+			addr = Read<uint64_t>(addr + vac.at(i));
+		}
+		return Read<AUTO>(addr + vac.at(vac.size() - 1));
+	}
 };
 
 inline Memory mem;
