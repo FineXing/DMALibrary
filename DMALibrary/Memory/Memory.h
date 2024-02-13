@@ -299,7 +299,7 @@ public:
 	VMM_HANDLE vHandle;
 
 
-	std::string get_unicode_str(uintptr_t address, size_t size);
+	std::string get_unicode_str(uintptr_t address);
 
 	template <typename T>
 	T ReadChain(uint64_t addr, std::vector<uint64_t> chain)

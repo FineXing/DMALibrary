@@ -797,24 +797,26 @@ void Memory::ExecuteWriteScatter(VMMDLL_SCATTER_HANDLE handle, int pid)
 	}
 }
 
-std::string Memory::get_unicode_str(uintptr_t address, size_t size)
+std::string Memory::get_unicode_str(uintptr_t address)
 {
-	address = address + 0x14;
-	char16_t wcharTemp[64] = { '\0' };
+	int size = mem.Read<int>(address + 0x10);
 
-	mem.Read(address, wcharTemp, size * 2);
+	char16_t wcharTemp[256] = { '\0' };
+	if (size * 2 > sizeof(wcharTemp)) size = sizeof(wcharTemp)/2;
 
-	// ¼ÆËãËùĞèµÄ»º³åÇø´óĞ¡£¨ÒÔ×Ö½ÚÎªµ¥Î»£©
+	mem.Read(address + 0x14, wcharTemp, size * 2);
+
+	// è®¡ç®—æ‰€éœ€çš„ç¼“å†²åŒºå¤§å°ï¼ˆä»¥å­—èŠ‚ä¸ºå•ä½ï¼‰
 	int bytesNeeded = WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<LPCWCH>(wcharTemp), -1, NULL, 0, NULL, NULL);
 	if (bytesNeeded <= 0) {
-		return std::string(); // ·µ»Ø¿Õ×Ö·û´®£¬Èç¹ûÎŞ·¨×ª»»
+		return std::string(); // è¿”å›ç©ºå­—ç¬¦ä¸²ï¼Œå¦‚æœæ— æ³•è½¬æ¢
 	}
 
-	// ´´½¨»º³åÇø²¢Ö´ĞĞ×ª»»
+	// åˆ›å»ºç¼“å†²åŒºå¹¶æ‰§è¡Œè½¬æ¢
 	std::string utf8Str(bytesNeeded, 0);
 	WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<LPCWCH>(wcharTemp), -1, &utf8Str[0], bytesNeeded, NULL, NULL);
 
-	// É¾³ı×Ö·û´®Ä©Î²µÄ¿Õ×Ö·û
+	// åˆ é™¤å­—ç¬¦ä¸²æœ«å°¾çš„ç©ºå­—ç¬¦
 	utf8Str.erase(std::find(utf8Str.begin(), utf8Str.end(), '\0'), utf8Str.end());
 
 	return utf8Str;
