@@ -821,3 +821,7 @@ std::string Memory::get_unicode_str(uintptr_t address)
 
 	return utf8Str;
 }
+
+bool Memory::IsValidPointer(uint64_t Pointer) {
+	return Pointer > 0x00010000 && Pointer < 0x7FFFFFFEFFFF;
+}

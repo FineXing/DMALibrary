@@ -321,6 +321,8 @@ public:
 		}
 		return Read<AUTO>(addr + vac.at(vac.size() - 1));
 	}
+
+	bool IsValidPointer(uint64_t Pointer);
 };
 
 inline Memory mem;
