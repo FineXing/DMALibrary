@@ -49,6 +49,7 @@ private:
 	std::shared_ptr<c_keys> key;
 	c_registry registry;
 	c_shellcode shellcode;
+	int found, missed = 0;
 
 	/*this->registry_ptr = std::make_shared<c_registry>(*this);
 	this->key_ptr = std::make_shared<c_keys>(*this);*/
@@ -173,6 +174,8 @@ public:
 
 	/*This part is where all memory operations are done, such as read, write.*/
 
+	uint64_t find_pattern(const char* pattern, const char* mask, uint64_t begin, uint64_t end);
+	uintptr_t FindPattern(const char* sig, uintptr_t base, uintptr_t size);
 	/**
 	 * \brief Scans the process for the signature.
 	 * \param signature the signature example "48 ? ? ?"

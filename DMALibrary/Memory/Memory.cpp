@@ -651,6 +651,79 @@ static uint8_t GetByte(const char* hex)
 	return (uint8_t)((hexdigits[hex[0]] << 4) | (hexdigits[hex[1]]));
 }
 
+
+uint64_t Memory::find_pattern(const char* pattern, const char* mask, uint64_t begin, uint64_t end)//https://guidedhacking.com/threads/external-signature-pattern-scan-issues.12618/?view=votes#post-73200
+{
+	auto scan = [](const char* pattern, const char* mask, char* begin, unsigned int size) -> char*
+		{
+			size_t patternLen = strlen(mask);
+			for (unsigned int i = 0; i < size - patternLen; i++)
+			{
+				bool found = true;
+				for (unsigned int j = 0; j < patternLen; j++) {
+					if (mask[j] != '?' && pattern[j] != *(begin + i + j))
+					{
+						found = false;
+						break;
+					}
+				}
+				if (found)
+					return (begin + i);
+			}
+			return nullptr;
+		};
+	uint64_t match = NULL;
+	int bytesRead;
+	DWORD oldprotect;
+	char* buffer = nullptr;
+	uint64_t curr = begin;
+	for (uint64_t curr = begin; curr < end; curr += 4096)
+	{
+		buffer = new char[4096];
+		//ReadProcessMemory(hProc, mbi.BaseAddress, buffer, 4096, &bytesRead);
+		Read(curr, buffer, 4096);
+		char* internalAddr = scan(pattern, mask, buffer, (unsigned int)4096);
+		if (internalAddr != nullptr)
+		{
+			match = curr + (uint64_t)(internalAddr - buffer);
+			break;
+		}
+	}
+	delete[] buffer;
+	return match;
+}
+
+uintptr_t Memory::FindPattern(const char* sig, uintptr_t base, uintptr_t size)//https://guidedhacking.com/threads/universal-pattern-signature-parser.9588/
+{
+	char pattern[100];
+	char mask[100];
+	char lastChar = ' ';
+	unsigned int j = 0;
+	for (unsigned int i = 0; i < strlen(sig); i++) {
+		if ((sig[i] == '?' || sig[i] == '*') && (lastChar != '?' && lastChar != '*'))
+		{
+			pattern[j] = mask[j] = '?';
+			j++;
+		}
+		else if (isspace(lastChar))
+		{
+			pattern[j] = lastChar = (char)strtol(&sig[i], 0, 16);
+			mask[j] = 'x';
+			j++;
+		}
+		lastChar = sig[i];
+	}
+	pattern[j] = mask[j] = '\0';
+	auto current_address = find_pattern(pattern, mask, base, base + size) + 0x3;
+	if (current_address <= 0x5)
+	{
+		missed++;
+		return 0x0;
+	}
+	found++;
+	return current_address + Read<int32_t>(current_address) + 4 - base;
+}
+
 uint64_t Memory::FindSignature(const char* signature, uint64_t range_start, uint64_t range_end, int PID)
 {
 	if (!signature || signature[0] == '\0' || range_start >= range_end)
